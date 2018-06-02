@@ -38,6 +38,7 @@ String GetDataPool;
 const int Open_Button_Pin  = 6;
 const int Timer_Button_Pin = 5;
 const int Main_LED_Pin     = 13;
+const int Serial_Port      = 9600;
 const uint64_t One_Hour    = 3600000;
 uint64_t TimerCounter      = 0;
 boolean TimerFlag          = false;
@@ -45,12 +46,12 @@ boolean Lock               = false;
 
 void setup()
 {
-    Serial.begin(9600);
+    Serial.begin(Serial_Port);
     Serial.println("System Start!");
     pinMode(Main_LED_Pin, OUTPUT);
     pinMode(Open_Button_Pin, INPUT);
     pinMode(Timer_Button_Pin, INPUT);
-    BT.begin(9600);
+    BT.begin(Serial_Port);
     BT.println("BT is ready!");
     Serial.println("BT");
 }
