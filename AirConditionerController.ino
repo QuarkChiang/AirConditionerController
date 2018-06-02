@@ -7,9 +7,6 @@
 #include "IRremote.h"
 #include "SoftwareSerial.h"
 
-//---------- IR System ----------
-IRsend irsend;
-
 /// <summary>
 /// 冷氣 26度
 /// </summary>
@@ -35,11 +32,7 @@ unsigned int State4[] = { 3450, 3300, 950, 750, 900, 800, 900, 750, 900, 800, 90
 /// </summary>
 unsigned int State5[] = { 3400, 3350, 850, 850, 800, 850, 850, 850, 850, 850, 800, 850, 850, 850, 850, 850, 800, 2500, 850, 2500, 800, 2500, 850, 2500, 800, 2500, 850, 2500, 850, 2500, 800, 2500, 850, 850, 800, 2500, 850, 850, 800, 2550, 800, 2500, 850, 850, 800, 850, 900, 2450, 850, 2500, 850, 800, 900, 2450, 850, 800, 900, 800, 900, 2450, 850, 2450, 900, 800, 850, 800, 3450, 3300, 900 };
 
-//
-//---------- IR System ----------
-
-//---------- Bluetooth System ----------
-
+IRsend irsend;
 SoftwareSerial BT(10, 11); //PIN10及PIN11分別為RX及TX腳位
 String GetDataPool;
 const int Open_Button_Pin  = 6;
@@ -50,120 +43,118 @@ uint64_t TimerCounter      = 0;
 boolean TimerFlag          = false;
 boolean Lock               = false;
 
-//---------- Bluetooth System ----------
-
 void setup()
 {
-	Serial.begin(9600);
-	Serial.println("System Start!");
-	pinMode(Main_LED_Pin, OUTPUT);
-	pinMode(Open_Button_Pin, INPUT);
-	pinMode(Timer_Button_Pin, INPUT);
-	BT.begin(9600);
-	BT.println("BT is ready!");
-	Serial.println("BT");
+    Serial.begin(9600);
+    Serial.println("System Start!");
+    pinMode(Main_LED_Pin, OUTPUT);
+    pinMode(Open_Button_Pin, INPUT);
+    pinMode(Timer_Button_Pin, INPUT);
+    BT.begin(9600);
+    BT.println("BT is ready!");
+    Serial.println("BT");
 }
 
 void loop()
 {
-	UseButtonOpen(digitalRead(Open_Button_Pin));
-	TimerButton(digitalRead(Timer_Button_Pin));
+    UseButtonOpen(digitalRead(Open_Button_Pin));
+    TimerButton(digitalRead(Timer_Button_Pin));
 
-	if (!Lock)
-		Bluetooth();
+    if (!Lock)
+        Bluetooth();
 
-	if (TimerFlag)
-		CalculationTimer();
+    if (TimerFlag)
+        CalculationTimer();
 }
 
 void UseButtonOpen(int readData)
 {
-	if (readData == HIGH)
-	{
-		digitalWrite(Main_LED_Pin, HIGH);
-		delay(500);
-		digitalWrite(Main_LED_Pin, LOW);
-		delay(100);
-		IRControl('1');
-	}
-	else
-	{
-		digitalWrite(Main_LED_Pin, LOW);
-	}
+    if (readData == HIGH)
+    {
+        digitalWrite(Main_LED_Pin, HIGH);
+        delay(500);
+        digitalWrite(Main_LED_Pin, LOW);
+        delay(100);
+        IRControl('1');
+    }
+    else
+    {
+        digitalWrite(Main_LED_Pin, LOW);
+    }
 }
 
 void TimerButton(int readData)
 {
-	if (readData == HIGH)
-	{
-		TimerFlag = true;
-		TimerCounter += One_Hour;
-		Serial.println("TimerButton On");
-	}
+    if (readData == HIGH)
+    {
+        TimerFlag = true;
+        TimerCounter += One_Hour;
+        Serial.println("TimerButton On");
+    }
 }
 
 void CalculationTimer()
 {
-	TimerCounter -= 1;
+    TimerCounter -= 1;
 
-	if (TimerCounter <= 0)
-	{
-		Serial.println("CalculationTimer Off");
-		IRControl('1');
-		TimerFlag = false;
-		TimerCounter = 0;
-	}
+    if (TimerCounter <= 0)
+    {
+        Serial.println("CalculationTimer Off");
+        IRControl('1');
+        TimerFlag = false;
+        TimerCounter = 0;
+    }
 }
 
 void CMDActivity()
 {
-	digitalWrite(Main_LED_Pin, HIGH);
-	delay(1000);
-	digitalWrite(Main_LED_Pin, LOW);
-	Lock = false;
+    digitalWrite(Main_LED_Pin, HIGH);
+    delay(1000);
+    digitalWrite(Main_LED_Pin, LOW);
+    Lock = false;
 }
 
 void IRControl(char inputData)
 {
-	Lock = true;
-	delay(200);
-	switch (inputData)
-	{
-	case '1':
-		irsend.sendRaw(State1, 70, 38);
-		BT.println("State1");
-		break;
-	case '2':
-		irsend.sendRaw(State2, 70, 38);
-		BT.println("State2");
-		break;
-	case '3':
-		irsend.sendRaw(State3, 70, 38);
-		BT.println("State3");
-		break;
-	case '4':
-		irsend.sendRaw(State4, 70, 38);
-		BT.println("State4");
-		break;
-	case '5':
-		irsend.sendRaw(State5, 70, 38);
-		BT.println("State5");
-		break;
-	default:
-		Serial.println(inputData);
-		Serial.println("IRControl Default");
-		break;
-	}
-	CMDActivity();
+    Lock = true;
+    delay(200);
+    switch (inputData)
+    {
+    case '1':
+        irsend.sendRaw(State1, 70, 38);
+        BT.println("State1");
+        break;
+    case '2':
+        irsend.sendRaw(State2, 70, 38);
+        BT.println("State2");
+        break;
+    case '3':
+        irsend.sendRaw(State3, 70, 38);
+        BT.println("State3");
+        break;
+    case '4':
+        irsend.sendRaw(State4, 70, 38);
+        BT.println("State4");
+        break;
+    case '5':
+        irsend.sendRaw(State5, 70, 38);
+        BT.println("State5");
+        break;
+    default:
+        Serial.println(inputData);
+        Serial.println("IRControl Default");
+        break;
+    }
+    CMDActivity();
 }
 
 void Bluetooth()
 {
-	if (BT.available() > 0)
-	{
-		delay(200); // 等資料
-		GetDataPool = BT.readString();
-		Serial.println(GetDataPool);
-		IRControl(GetDataPool.charAt(0));
-	}
+    if (BT.available() > 0)
+    {
+        delay(200); // 等資料
+        GetDataPool = BT.readString();
+        Serial.println(GetDataPool);
+        IRControl(GetDataPool.charAt(0));
+    }
 }
